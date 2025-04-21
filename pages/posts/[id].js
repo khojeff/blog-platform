@@ -1,9 +1,36 @@
 import { useRouter } from 'next/router';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 
 export default function PostDetail() {
   const router = useRouter();
   const { id } = router.query;
+
+  const [post, setPost] = useState(null);
+
+  useEffect(() => {
+    if (id) {
+      fetchPost();
+    }
+  }, [id]);
+
+  const fetchPost = async () => {
+    try {
+      const res = await fetch(`/api/posts/${id}`);
+      const data = await res.json();
+      setPost(data);
+    } catch (error) {
+      console.error('Failed to fetch post', error);
+    }
+  };
+
+  if (!post) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <p>Loading...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen p-8">
@@ -11,21 +38,11 @@ export default function PostDetail() {
         <button className="mb-4 text-blue-500">&larr; Back to Home</button>
       </Link>
 
-      <h1 className="text-2xl font-bold mb-4">Post Detail - {id}</h1>
+      <h1 className="text-2xl font-bold mb-2">{post.title}</h1>
+      <p className="text-gray-600 mb-4">{new Date(post.createdAt).toLocaleString()}</p>
 
-      <div className="mb-4">
-        <p className="text-gray-700">
-          Post content will be displayed here.
-        </p>
-      </div>
-
-      <div className="flex space-x-4">
-        <button className="bg-yellow-400 text-white px-4 py-2 rounded hover:bg-yellow-500">
-          Edit
-        </button>
-        <button className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600">
-          Delete
-        </button>
+      <div className="text-gray-800 whitespace-pre-wrap">
+        {post.content}
       </div>
     </div>
   );
